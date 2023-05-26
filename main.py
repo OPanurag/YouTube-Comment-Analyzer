@@ -5,13 +5,13 @@ import csv
 
 # Create a CSV file to store all data extracted
 file = open(r'./comments/comment.csv', 'w')
-text = csv.writer(file, delimiter=' ')
+text = csv.writer(file, delimiter=' ', escapechar=' ', skipinitialspace=True, lineterminator='\n')
 
 # Set up YouTube API credentials (requires enabling YouTube Data API v3)
 api_key = "AIzaSyBzup8AXTkgpL4slf-m9zvrtnmdmDzG9FM"
 
 # Specify the YouTube video URL and video id
-video_url = "https://youtu.be/"
+video_url = "https://youtu.be/G3g7HwG5BeQ"
 video_id = "G3g7HwG5BeQ"
 
 # Create a directory to store the downloaded comments
