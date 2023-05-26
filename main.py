@@ -48,7 +48,7 @@ comments_response = youtube.commentThreads().list(
 # Extract the comments from the downloaded info.json file
 info_file = os.path.join(output_dir, f"{video_id}.info.json")
 if os.path.exists(info_file):
-    with open(info_file, 'r', encoding='utf-8') as file:
+    with open(info_file, 'w+', encoding='utf-8') as file:
         info_data = file.read()
         comments_start_index = info_data.find('"comments": [')
         if comments_start_index != -1:
