@@ -1,12 +1,18 @@
 import os
 import youtube_dl
 from googleapiclient.discovery import build
+import csv
+
+# Create a CSV file to store all data extracted
+file = open(r'./comments/comment.csv', 'w')
+text = csv.writer(file, delimiter=' ')
 
 # Set up YouTube API credentials (requires enabling YouTube Data API v3)
 api_key = "AIzaSyBzup8AXTkgpL4slf-m9zvrtnmdmDzG9FM"
 
-# Specify the YouTube video URL
-video_url = "https://www.youtube.com/watch?v=4rURry0UFB8"
+# Specify the YouTube video URL and video id
+video_url = "https://youtu.be/"
+video_id = "G3g7HwG5BeQ"
 
 # Create a directory to store the downloaded comments
 output_dir = "comments"
@@ -15,18 +21,29 @@ if not os.path.exists(output_dir):
 
 # Download the YouTube video and extract its comments
 ydl_opts = {
-    'writeinfojson': True,
-    'format': 'best',
-    'outtmpl': os.path.join(output_dir, '%(id)s.%(ext)s'),
-    'skip_download': True,
-    'writecomments': True,
-    'youtube_include_comments': True,
-    'ignoreerrors': True,
-    'no_warnings': True
-}
+            'writeinfojson': True,
+            'format': 'best',
+            'outtmpl': os.path.join(output_dir, '%(id)s.%(ext)s'),
+            'skip_download': True,
+            'writecomments': True,
+            'youtube_include_comments': True,
+            'ignoreerrors': True,
+            'no_warnings': True
+            }
 
 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
     ydl.download([video_url])
+
+# Initialize the YouTube Data API client
+youtube = build('youtube', 'v3', developerKey=api_key)
+
+# Call the API to get comments (requires enabling YouTube Data API v3)
+comments_response = youtube.commentThreads().list(
+                                                    part='snippet',
+                                                    videoId=video_id,
+                                                    textFormat='plainText'
+                                                ).execute()
+
 
 # Extract the comments from the downloaded info.json file
 info_file = os.path.join(output_dir, f"{video_id}.info.json")
@@ -43,17 +60,8 @@ if os.path.exists(info_file):
             for comment in comments_list:
                 print(comment['textOriginal'])
 
-# Initialize the YouTube Data API client
-youtube = build('youtube', 'v3', developerKey=api_key)
 
-# Call the API to get comments (requires enabling YouTube Data API v3)
-comments_response = youtube.commentThreads().list(
-    part='snippet',
-    videoId='YOUR_VIDEO_ID',
-    textFormat='plainText',
-    maxResults=100  # Adjust the number of comments you want to retrieve
-).execute()
-
-# Process and print the comments from the API response
-for comment in comments_response['items']:
-    print(comment['snippet']['topLevelComment']['snippet']['textOriginal'])
+# Process and print the comments from the API response to csv
+text.writerows(
+    comment['snippet']['topLevelComment']['snippet']['textOriginal'] for comment in comments_response['items'])
+file.close()
